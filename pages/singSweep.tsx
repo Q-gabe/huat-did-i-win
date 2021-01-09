@@ -6,7 +6,7 @@ export default function SingSweep() {
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState(false)
 
-    //const delay = t => new Promise(resolve => setTimeout(resolve, t))
+    const delay = t => new Promise(resolve => setTimeout(resolve, t))
 
     const handleImage = (file) => {
         setLoading(true);

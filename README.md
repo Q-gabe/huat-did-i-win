@@ -21,7 +21,7 @@ Using GCP-provided Optical Character Recognition models, "_Huat_ Did I Win", a p
 
 ## Demo
 
-TO-DO
+<a href="https://github.com/Q-gabe/huat-did-i-win"><img src="https://raw.githubusercontent.com/Q-gabe/huat-did-i-win/master/preview/Preview.png" alt="Preview" width="100%"></a>
 
 ## Getting Started
 
@@ -37,7 +37,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 [API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on endpoints served from `pages/api`.
 
-In order to access the GCP Vision API, follow the [setup guide from GCP documentation](https://cloud.google.com/vision/docs/setup). Ticket recognition will not work without
+In order to access the GCP Vision API, follow the [setup guide from GCP documentation](https://cloud.google.com/vision/docs/setup). Ticket recognition will not work without a service account for the server.
 
 ## Technologies used
 
