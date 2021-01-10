@@ -8,6 +8,7 @@ export default function Toto() {
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState(false)
     const [winnings, setWinnings] = useState(0)
+    const [errorNoNum, setErrorNoNum] = useState(false)
     const [errorDrawNum, setErrorDrawNum] = useState(false)
     const [errorBetNum, setErrorBetNum] = useState(false)
     const [winningBets, setWinningBets] = useState([])
@@ -167,6 +168,16 @@ export default function Toto() {
                                 return;
                             });  
                     })
+                    .catch((err) => {
+                        console.log(err)
+                        // Failed to find any bet numbers
+                        console.log("No words found by Vision API!")
+                        setLoading(false);
+                        setResult(false);
+                        setErrorNoNum(true);
+                        scrollPageToBottom();
+                        return;
+                    })
             } 
             img.src = fileLoadedEvent.target.result as string;
         }
@@ -218,6 +229,11 @@ export default function Toto() {
                         {errorBetNum &&
                             <>
                                 <blockquote className="blockquote text-center mt-3 warning">Failed to detect any bet numbers! Please try again.</blockquote>
+                            </>
+                        }
+                        {errorNoNum &&
+                            <>
+                                <blockquote className="blockquote text-center mt-3 warning">Failed to detect any numbers on the picture! Please try again.</blockquote>
                             </>
                         }
                         {!loading && result &&
