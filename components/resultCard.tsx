@@ -26,7 +26,7 @@ const ResultCard = (props) => {
                 <h1 className="display-5 text-center mb-2">YOU WON ${winnings}!</h1>
                 <div className="text-center">
                     <blockquote className="text-center mb-1">Winning bets:</blockquote>
-                    <ul className="winning-bets ml-5 mr-5">
+                    <ul className="winning-bets">
                         {winningBets}
                     </ul>
                 </div>
