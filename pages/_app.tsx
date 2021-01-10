@@ -28,11 +28,11 @@ function MyApp({ Component, pageProps }) {
             <div className="card-body">
                 <Component {...pageProps} />
             </div>
-            <img className="barcode" src="barcode.png"/>
+            <img id="barcode" className="barcode" src="barcode.png"/>
         </div>
-        <div className="footer text-center mt-3">
+        <footer className="footer text-center mt-3 mb-2">
             Made by <a href="https://github.com/Q-gabe">Team Silverhand (@Q-gabe)</a>.
-        </div>
+        </footer>
       </>
     )
 }

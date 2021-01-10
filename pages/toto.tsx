@@ -8,8 +8,21 @@ export default function Toto() {
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState(false)
     const [winnings, setWinnings] = useState(0)
+    const [errorDrawNum, setErrorDrawNum] = useState(false)
+    const [errorBetNum, setErrorBetNum] = useState(false)
+    const [winningBets, setWinningBets] = useState([])
 
     //const delay = t => new Promise(resolve => setTimeout(resolve, t))
+
+    const clearErrors = () => {
+        setErrorDrawNum(false)
+        setErrorBetNum(false)
+    }
+
+    const scrollPageToBottom = () => {
+        let element = document.getElementById("barcode");
+        element.scrollIntoView({behavior: "smooth", block: "end"});
+    }
 
     const handleImage = (file) => {
         // Set loading
@@ -23,7 +36,7 @@ export default function Toto() {
         fileReader.onload = (fileLoadedEvent) => {
             let img = new Image();
             img.onload = (imageLoadEvent) => {
-                let canvas = document.getElementById('preview'),
+                let canvas = document.getElementById('preview') as HTMLCanvasElement,
                     MAX_SIZE = 800,
                     width = img.width,
                     height = img.height;
@@ -42,12 +55,11 @@ export default function Toto() {
                 canvas.width = width;
                 canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                scrollPageToBottom();
                 let dataUrl = canvas.toDataURL('image/jpeg', 0.5).split(',')[1];
-
-                 // let srcData = (fileLoadedEvent.target.result as string).split(',')[1];
-                // console.log(srcData)
-                console.log(dataUrl)
+                console.log("DEBUG: Image successfully compressed.")
                 
+                // Send request to GCP Vision API
                 axios
                     .post('/api/vision', {
                         requests: [
@@ -69,12 +81,20 @@ export default function Toto() {
                         console.log("Vision API Detected: " + res.data)
                         
                         // Process OCR data
-                        // Draw Number
+                        // Draw Number - Find by extracting number with pattern 0000/00 with four digit number being the draw number S Pools uses
                         let drawNum : string = visionRes.match(/[0-9]{4}[/][0-9]{2}/g) + '';
                         let drawNum1 = ''
                         if (drawNum) {
                             drawNum1 = drawNum.split("/")[0]
                             console.log("drawNum = "+ drawNum1)
+                        } else {
+                            // Failed to find any draw number
+                            console.log("No draw number found!")
+                            setLoading(false);
+                            setResult(false);
+                            setErrorDrawNum(true);
+                            scrollPageToBottom();
+                            return;
                         }
 
                         // Stub data ( Only applicable for ordinary tickets )
@@ -82,10 +102,21 @@ export default function Toto() {
                         let partsPurchased = "1"
                         let isHalfBet = "false"
 
-                        // Numbers
+                        // Numbers - Extract by finding 6 double digit numbers joined with whitespace
                         let numbers = visionRes.match(/[0-9]{2}\s[0-9]{2}\s[0-9]{2}\s[0-9]{2}\s[0-9]{2}\s[0-9]{2}/g);
-                        let totalBets = numbers.length
-                        
+                        let totalBets = 0
+                        if (numbers) {
+                            totalBets = numbers.length
+                        } else {
+                            // Failed to find any bet numbers
+                            console.log("No bet number found!")
+                            setLoading(false);
+                            setResult(false);
+                            setErrorBetNum(true);
+                            scrollPageToBottom();
+                            return;
+                        }
+
                         let procNumbers = []
                         for (let i = 0; i < totalBets; i++) {
                             let temp = numbers[i] + ''
@@ -93,11 +124,11 @@ export default function Toto() {
                         }
                         console.log(procNumbers)
 
-                        // Calculate totalWinnings from Toto website
-                        let totalWinnings = 0
+                        // Query Toto website per row of bet
+                        let promises = []
                         for (let i = 0; i < totalBets; i++) {
-                            axios
-                                .post('https://cors-anywhere.herokuapp.com/https://www.singaporepools.com.sg/_layouts/15/TotoApplication/TotoCommonPage.aspx/CalculatePrizeForTOTO', {
+                            promises.push(axios
+                                .post('/api/toto', {
                                         "numbers": procNumbers[i],
                                         "drawNumber": drawNum1,
                                         "isHalfBet": isHalfBet,
@@ -105,22 +136,36 @@ export default function Toto() {
                                         "partsPurchased": partsPurchased
                                     }
                                 )
-                                .then((res) => {
-                                    console.log(res.data)
-                                    let parsed = JSON.parse(res.data.d)
-                                    if (parsed.Prizes) {
-                                        for (let j = 0; j < parsed.Prizes; j++) {
-                                            totalWinnings += parsed.Prizes[j].Total;
-                                        }
-                                    }
-                                })
+                            );
                         }
-                        
-                        // Unset loading
-                        setLoading(false);
-                        setResult(true);
-                        setWinnings(totalWinnings)
-                        console.log("set to false");
+
+                        // Calculate total winnings from all toto HTTP queries
+                        let totalWinnings = 0
+                        let winningBets = []
+                        Promise.all(promises)
+                            .then((results) => {
+                                console.log("Results:")
+                                console.log(results)
+
+                                for (let i = 0; i < results.length; i++) {
+                                    let drawResult = JSON.parse(results[i].data.d)
+                                    if (drawResult.Prizes.length > 0) {
+                                        console.log("Won Prize! " + drawResult.Prizes[0].Total)
+                                        console.log("Winning bet: " + results[i].data.numbers)
+                                        totalWinnings += drawResult.Prizes[0].Total
+                                        winningBets.push(results[i].data.numbers)
+                                    }
+                                }
+
+                                // Unset loading
+                                clearErrors();
+                                setLoading(false);
+                                setResult(true);
+                                setWinnings(totalWinnings);
+                                setWinningBets(winningBets);
+                                scrollPageToBottom();
+                                return;
+                            });  
                     })
             } 
             img.src = fileLoadedEvent.target.result as string;
@@ -153,22 +198,32 @@ export default function Toto() {
                     <blockquote className="blockquote text-center">Scan your ticket:</blockquote>
                     <div className="drawButtons text-center">
                         {!loading && 
-                            <label className="btn btn-lg btn-primary">
+                            <label className="btn btn-lg btn-primary mb-2">
                                 <input type="file" accept="image/*" capture="camera" onChange={(e) => handleImage(e.target.files[0])} name="ticketImage" hidden/>
                                 <Camera size={24} color="white"/> Camera
                             </label>
                         }
                         {loading &&
-                            <button type="button" className="btn btn-lg btn-primary" disabled>
+                            <button type="button" className="btn btn-lg btn-primary mb-2" disabled>
                                  <span className="spinner-border spinner-border-sm align-middle" role="status"></span>
                                  {' '}Loading
                             </button>
                         }
                         <canvas id="preview" className="preview m-auto"></canvas>
+                        {errorDrawNum &&
+                            <>
+                                <blockquote className="blockquote text-center mt-3 warning">Failed to detect any draw number! Please try again.</blockquote>
+                            </>
+                        }
+                        {errorBetNum &&
+                            <>
+                                <blockquote className="blockquote text-center mt-3 warning">Failed to detect any bet numbers! Please try again.</blockquote>
+                            </>
+                        }
                         {!loading && result &&
                             <>
-                                <blockquote className="blockquote text-center mt-2">Results:</blockquote>
-                                <ResultCard winnings={winnings} />
+                                <blockquote className="blockquote text-center mt-3 mb-0">Results:</blockquote>
+                                <ResultCard winnings={winnings} winningBets={winningBets} />
                             </>
                         }
                     </div>
