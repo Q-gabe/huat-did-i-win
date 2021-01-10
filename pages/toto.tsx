@@ -210,8 +210,8 @@ export default function Toto() {
                     <div className="drawButtons text-center">
                         {!loading && 
                             <label className="btn btn-lg btn-primary mb-2">
-                                <input type="file" accept="image/*" capture="camera" onChange={(e) => handleImage(e.target.files[0])} name="ticketImage" hidden/>
-                                <Camera size={24} color="white"/> Camera
+                                <input type="file" accept="image/*" onChange={(e) => handleImage(e.target.files[0])} name="ticketImage" hidden/>
+                                <Camera size={24} color="white"/> Camera/Gallery
                             </label>
                         }
                         {loading &&
