@@ -33,27 +33,7 @@ export default function FourD() {
                         <Link href="/fourd"><a className="btn btn-lg btn-primary drawButton active">4D</a></Link>
                         <Link href="/"><a className="drawButton"><XCircleFill size={32} /></a></Link>
                     </div>
-                    <blockquote className="blockquote text-center">Scan your ticket:</blockquote>
-                    <div className="drawButtons text-center">
-                        {!loading && 
-                            <label className="btn btn-lg btn-primary">
-                                <input type="file" accept="image/*" capture="camera" onChange={(e) => handleImage(e.target.files[0])} name="ticketImage" hidden/>
-                                <Camera size={24} color="white"/> Camera
-                            </label>
-                        }
-                        {loading &&
-                            <button type="button" className="btn btn-lg btn-primary" disabled>
-                                    <span className="spinner-border spinner-border-sm align-middle" role="status"></span>
-                                    {' '}Loading
-                            </button>
-                        }
-                        {!loading && result &&
-                            <>
-                                <blockquote className="blockquote text-center mt-2">Results:</blockquote>
-                                
-                            </>
-                        }
-                    </div>
+                    <blockquote className="blockquote text-center">Currently only Toto ordinary tickets are supported!</blockquote>
                 </div>
             </main>
         </>
