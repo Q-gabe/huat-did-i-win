@@ -21,7 +21,7 @@ Using GCP-provided Optical Character Recognition models, "_Huat_ Did I Win", a p
 
 ## Demo
 
-<h3 align="center"> Try it now at <a href="HuatDidI.Win">HuatDidI.Win</a>!</h4>
+<h3 align="center"> Try it now at <a href="https://HuatDidI.Win">HuatDidI.Win</a>!</h4>
 
 <a href="https://github.com/Q-gabe/huat-did-i-win"><img src="https://raw.githubusercontent.com/Q-gabe/huat-did-i-win/master/preview/Preview.png" alt="Preview" width="100%"></a>
 
